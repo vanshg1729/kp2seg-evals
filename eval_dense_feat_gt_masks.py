@@ -115,10 +115,9 @@ def evaluate_all(loader, matcher, output_json_path):
 
 
 if __name__ == "__main__":
-    MATCHER = "dust3r"
+    MATCHER = "mast3r"
 
-    # ANGLES = [0, 45, 90, 135, 180]
-    ANGLES = [45, 90, 135, 180]
+    ANGLES = [0, 45, 90, 135, 180]
     for i in range(len(ANGLES) - 1):
         START_ANGLE = ANGLES[i]
         END_ANGLE = ANGLES[i + 1]
