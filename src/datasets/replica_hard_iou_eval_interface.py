@@ -19,7 +19,6 @@ class ReplicaHardIoUDataset(Dataset):
         self.data_root = cfg["DATASET"]["DATA_ROOT"]
         self.rgb_path = cfg["DATASET"]["DATA_ROOT"]
         self.segdata_path = cfg["DATASET"]["SEGDATA_ROOT"]
-        self.pairs_path = cfg["DATASET"]["PAIRS_ROOT"]
         self.pairs_json_path = cfg["DATASET"]["PAIRS_PATH"]
 
         self.selected_scenes = selected_scenes
@@ -62,7 +61,7 @@ class ReplicaHardIoUDataset(Dataset):
                 data = pickle.load(f)
                 # Create a new dict with only needed data
                 return {
-                    "mask_coco_rles": data.get("mask_coco_rles"),
+                    "mask_coco_rles": data.get("masks_coco_rles"),
                     "seg_corr_list": data.get("seg_corr_list"),
                 }
         except Exception as e:

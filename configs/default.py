@@ -28,6 +28,7 @@ _CN.DATASET.SCENES_VAL = (
 )
 _CN.DATASET.DATA_ROOT = None  # path to RGB dataset folder
 _CN.DATASET.SEGDATA_ROOT = None  # path to segmentation data folder
+_CN.DATASET.PAIRS_PATH = None # path to the ref-query pairs json file
 _CN.DATASET.PAIRS_ROOT = None  # path to pairs data folder
 _CN.DATASET.TRANSFORMS_ROOT = None  # path to transforms data folder
 _CN.DATASET.M_PRIME = None  # max number of masks in segdata

@@ -15,10 +15,10 @@ import sys
 # HACK: To get around broken editable pip install
 sys.path.insert(0, "/home2/rjayanti/workdirs/rjayanti/image-matching-models")
 
-eval_spp_config = "configs/config_eval_spp_resz.yaml"
-cfg.merge_from_file(eval_spp_config)
+eval_replica_config = "configs/config_eval_replica.yaml"
+cfg.merge_from_file(eval_replica_config)
 
-from src.datasets.replica_hard_iou_eval_interface.py import (
+from src.datasets.replica_hard_iou_eval_interface import (
     ReplicaHardIoUDataset,
 )
 from torch.utils.data import DataLoader
@@ -79,6 +79,7 @@ def compute_pred_matrix(matched_kpts0, matched_kpts1, masks0, masks1):
 
 def evaluate_all(loader, matcher, output_json_path):
     results = defaultdict(dict)
+    print(f"{output_json_path = }")
 
     for batch in tqdm(loader, desc="Evaluating"):
         scene_id = batch["scene_id"][0]
@@ -104,6 +105,7 @@ def evaluate_all(loader, matcher, output_json_path):
 
         results[scene_id][key] = {k: v for k, v in sample_metrics_dict.items()}
 
+    os.makedirs(os.path.dirname(output_json_path), exist_ok=True)
     with open(output_json_path, "w") as f:
         json.dump(results, f, indent=2)
     print(f"Results saved to {output_json_path}")
@@ -111,18 +113,18 @@ def evaluate_all(loader, matcher, output_json_path):
 
 
 if __name__ == "__main__":
-    MATCHER = "roma"
+    MATCHER = "mast3r"
     print(f"Evaluating with matcher: {MATCHER}")
 
-    # ANGLES = [0, 45, 90, 135, 180]
-    ANGLES = [0, 45, 90]
+    ANGLES = [0, 45, 90, 135, 180]
+    # ANGLES = [0, 45, 90]
     # ANGLES = [90, 135, 180]
     for i in range(len(ANGLES) - 1):
         START_ANGLE = ANGLES[i]
         END_ANGLE = ANGLES[i + 1]
         print(f"Evaluating {START_ANGLE} to {END_ANGLE} degrees")
 
-        subset_split_file = "results/pose_bins_subset_val36.json"
+        subset_split_file = cfg['DATASET']['PAIRS_PATH']
         with open(subset_split_file, "r") as f:
             subset_split = json.load(f)
 
@@ -134,6 +136,8 @@ if __name__ == "__main__":
                 for pair_str in scene_data[f"{START_ANGLE}-{END_ANGLE}"]:
                     ref, query = pair_str.split("-")
                     ref_query_pairs.append((scene_id, ref, query))
+        
+        # ref_query_pairs = ref_query_pairs[:10] # for testing that the whole pipeline works
 
         # # val_selected_scenes = ["394a542a19", "9f79564dbf", "e8e81396b6"]
         # val_dataset = ScanNetPPResizedHardIoUDataset(cfg, val_selected_scenes, None)
@@ -158,7 +162,7 @@ if __name__ == "__main__":
         results = evaluate_all(
             val_loader,
             matcher,
-            output_json_path=f"results/{MATCHER}_val_36_{START_ANGLE}_{END_ANGLE}.json",
+            output_json_path=f"{cfg['SAVE_DIR']}/{MATCHER}_val_8_{START_ANGLE}_{END_ANGLE}.json",
         )
 
 print("Done evaluating all pairs.")

@@ -18,6 +18,9 @@ def createPR(S_in, GThard, n_thresh=100):
     # count the number of ground-truth positives (GTP)
     GTP = np.count_nonzero(GT.any(0))
 
+    if GTP == 0:
+        return [1], [0], 0.0
+
     # GT-values for best match per query (i.e., per column)
     GT = GT[np.argmax(S, axis=0), np.arange(GT.shape[1])]
 
@@ -43,7 +46,12 @@ def createPR(S_in, GThard, n_thresh=100):
         TP = np.count_nonzero(GT & B)  # true positives
         FP = np.count_nonzero((~GT) & B)  # false positives
 
-        P.append(TP / (TP + FP))  # precision
+        total_predicted_positives = TP + FP
+        if total_predicted_positives == 0:
+            P.append(0.0)
+        else:
+            P.append(TP / (TP + FP))  # precision
+
         R.append(TP / GTP)  # recall
 
     # calculate AUPRC
