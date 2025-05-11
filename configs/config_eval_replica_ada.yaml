@@ -1,0 +1,37 @@
+DATASET:
+  DATA_SOURCE: 'Replica'
+  DATA_ROOT: '/scratch/rjayanti/toponav/indoor-topo-loc/datasets/replica-dataset/data'
+  SEGDATA_ROOT: '/scratch/rjayanti/toponav/indoor-topo-loc/datasets/replica-dataset/data'
+  PAIRS_PATH: '/scratch/rjayanti/toponav/indoor-topo-loc/datasets/replica-dataset/data/replica_pose_bins_subset.json'
+  # SCENES: None # Read from resources/scannetpp_176_split.json
+  # SCENES_VAL: None # Read from resources/scannetpp_176_split.json
+  HEIGHT: 480
+  WIDTH: 640
+  M_PRIME: 100 # max number of masks, drop the rest based on area
+  PAIRS_ROOT: null
+  SCENES: null
+  SCENES_VAL: null
+DEBUG: false
+FEATURE_MATCHER:
+  SINKHORN:
+    DUSTBIN_SCORE_INIT: 1.0
+    NUM_IT: 50
+  TYPE: Sinkhorn
+MODEL: null
+RANDOM_SEED: 42
+SAVE_DIR: results/replica_val8_evals
+TRAINING:
+  ALT_LOSS_WEIGHT: 0
+  BATCH_SIZE: 36
+  EPOCHS: 20
+  GRAD_CLIP: 0.0
+  LOG_INTERVAL: null
+  LR: 0.0001
+  LR_STEP_GAMMA: null
+  LR_STEP_INTERVAL: null
+  NUM_GPUS: 1
+  NUM_WORKERS: 4
+  PREFETCH_FACTOR: 2
+  VAL_BATCHES: null
+  VAL_INTERVAL: null
+  WEIGHT_DECAY: 0.0001

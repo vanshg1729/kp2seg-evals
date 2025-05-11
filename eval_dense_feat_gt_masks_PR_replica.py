@@ -15,7 +15,7 @@ import sys
 # HACK: To get around broken editable pip install
 sys.path.insert(0, "/home2/rjayanti/workdirs/rjayanti/image-matching-models")
 
-eval_replica_config = "configs/config_eval_replica.yaml"
+eval_replica_config = "configs/config_eval_replica_ada.yaml"
 cfg.merge_from_file(eval_replica_config)
 
 from src.datasets.replica_hard_iou_eval_interface import (
