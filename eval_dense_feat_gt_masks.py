@@ -115,7 +115,7 @@ def evaluate_all(loader, matcher, output_json_path):
 
 
 if __name__ == "__main__":
-    MATCHER = "mast3r"
+    MATCHER = "superpoint-lg"
 
     ANGLES = [0, 45, 90, 135, 180]
     for i in range(len(ANGLES) - 1):
@@ -136,9 +136,6 @@ if __name__ == "__main__":
                     ref, query = pair_str.split("_")
                     ref_query_pairs.append((scene_id, ref, query))
 
-        # # val_selected_scenes = ["394a542a19", "9f79564dbf", "e8e81396b6"]
-        # val_dataset = ScanNetPPResizedHardIoUDataset(cfg, val_selected_scenes, None)
-
         val_dataset = ScanNetPPResizedHardIoUDataset(cfg, None, ref_query_pairs)
 
         # NOTE: Currently dataset only supports batch size of 1 - to allow for variable number of masks
@@ -157,9 +154,7 @@ if __name__ == "__main__":
         )  # can change to 4096
 
         results = evaluate_all(
-            val_loader,
-            matcher,
-            output_json_path=f"results/{MATCHER}_val_36_{START_ANGLE}_{END_ANGLE}.json",
+            val_loader, matcher, output_json_path=f"results/{MATCHER}_val_36.json"
         )
 
 print("Done evaluating all pairs.")

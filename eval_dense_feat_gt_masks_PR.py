@@ -24,8 +24,26 @@ from src.datasets.scannetpp_resz_hard_iou_eval_interface import (
 from torch.utils.data import DataLoader
 from matching import get_matcher
 
+from src.utils.vpr_metrics import (
+    createPR,
+    recallAt100precision,
+    recallAtK,
+    meanReciprocalRank,
+)
 
-def compute_vote_matrix(matched_kpts0, matched_kpts1, masks0, masks1):
+
+def compute_sample_metrics(pred_mat, gt_mat):
+    return {
+        "auprc": createPR(pred_mat, gt_mat)[2],
+        "r_at_1": recallAtK(pred_mat, gt_mat, K=1),
+        "r_at_5": recallAtK(pred_mat, gt_mat, K=5),
+        "r_at_10": recallAtK(pred_mat, gt_mat, K=10),
+        "r_at_100p": recallAt100precision(pred_mat, gt_mat),
+        "mrr": meanReciprocalRank(pred_mat, gt_mat),
+    }
+
+
+def compute_pred_matrix(matched_kpts0, matched_kpts1, masks0, masks1):
     matched_kpts0 = (
         torch.from_numpy(matched_kpts0)
         if isinstance(matched_kpts0, np.ndarray)
@@ -53,34 +71,10 @@ def compute_vote_matrix(matched_kpts0, matched_kpts1, masks0, masks1):
     src_idx = src_mask_ids[valid].int().argmax(dim=1)
     tgt_idx = tgt_mask_ids[valid].int().argmax(dim=1)
 
-    votes = torch.zeros((M, N), dtype=torch.int32)
+    pred_mat = torch.zeros((M, N), dtype=torch.int32)
     for i, j in zip(src_idx.tolist(), tgt_idx.tolist()):
-        votes[i, j] += 1
-    return votes
-
-
-def get_pred_assignment(votes):
-    pred = votes.argmax(dim=1)
-    pred[votes.sum(dim=1) == 0] = -1
-    return pred
-
-
-def compute_iou(pred_assignment, gt_assignment):
-    M, N = gt_assignment.shape
-    gt_idx = gt_assignment.argmax(dim=1)
-    has_gt = gt_assignment.sum(dim=1) > 0  # Only consider source segments with a match
-
-    correct = 0
-    total = 0
-
-    for i in range(M):
-        if not has_gt[i]:
-            continue  # Ignore unmatched GT
-        total += 1
-        if pred_assignment[i] == gt_idx[i]:
-            correct += 1
-
-    return correct / total if total > 0 else 0.0
+        pred_mat[i, j] += 1
+    return pred_mat
 
 
 def evaluate_all(loader, matcher, output_json_path):
@@ -102,11 +96,13 @@ def evaluate_all(loader, matcher, output_json_path):
         masks1 = batch["masks_gt_1"][0].bool()
         gt_assignment = torch.diag_embed(batch["seg_corr_list_common"][0])
 
-        votes = compute_vote_matrix(mkpts0, mkpts1, masks0, masks1)
-        pred_assignment = get_pred_assignment(votes)
-        avg_iou = compute_iou(pred_assignment, gt_assignment)
+        pred_mat = compute_pred_matrix(mkpts0, mkpts1, masks0, masks1)
+        pred_mat_cpu = pred_mat.detach().cpu().numpy()
+        gt_assignment_cpu = gt_assignment.detach().cpu().numpy()
 
-        results[scene_id][key] = avg_iou
+        sample_metrics_dict = compute_sample_metrics(pred_mat_cpu, gt_assignment_cpu)
+
+        results[scene_id][key] = {k: v for k, v in sample_metrics_dict.items()}
 
     with open(output_json_path, "w") as f:
         json.dump(results, f, indent=2)
@@ -115,9 +111,12 @@ def evaluate_all(loader, matcher, output_json_path):
 
 
 if __name__ == "__main__":
-    MATCHER = "superpoint-lg"
+    MATCHER = "roma"
+    print(f"Evaluating with matcher: {MATCHER}")
 
-    ANGLES = [0, 45, 90, 135, 180]
+    # ANGLES = [0, 45, 90, 135, 180]
+    ANGLES = [0, 45, 90]
+    # ANGLES = [90, 135, 180]
     for i in range(len(ANGLES) - 1):
         START_ANGLE = ANGLES[i]
         END_ANGLE = ANGLES[i + 1]
@@ -135,6 +134,9 @@ if __name__ == "__main__":
                 for pair_str in scene_data[f"{START_ANGLE}-{END_ANGLE}"]:
                     ref, query = pair_str.split("_")
                     ref_query_pairs.append((scene_id, ref, query))
+
+        # # val_selected_scenes = ["394a542a19", "9f79564dbf", "e8e81396b6"]
+        # val_dataset = ScanNetPPResizedHardIoUDataset(cfg, val_selected_scenes, None)
 
         val_dataset = ScanNetPPResizedHardIoUDataset(cfg, None, ref_query_pairs)
 
@@ -154,7 +156,9 @@ if __name__ == "__main__":
         )  # can change to 4096
 
         results = evaluate_all(
-            val_loader, matcher, output_json_path=f"results/{MATCHER}_val_36.json"
+            val_loader,
+            matcher,
+            output_json_path=f"results/{MATCHER}_val_36_{START_ANGLE}_{END_ANGLE}.json",
         )
 
 print("Done evaluating all pairs.")
