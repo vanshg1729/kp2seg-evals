@@ -13,9 +13,10 @@ from configs.default import cfg
 import sys
 
 # HACK: To get around broken editable pip install
-sys.path.insert(0, "/home2/rjayanti/workdirs/rjayanti/image-matching-models")
+# sys.path.insert(0, "/home2/rjayanti/workdirs/rjayanti/image-matching-models")
+sys.path.insert(0, "/ssd_scratch/cvit/akshat/image-matching-models")
 
-eval_replica_config = "configs/config_eval_replica_ada.yaml"
+eval_replica_config = "configs/config_eval_replica_akshat.yaml"
 cfg.merge_from_file(eval_replica_config)
 
 from src.datasets.replica_hard_iou_eval_interface import (
@@ -34,12 +35,12 @@ from src.utils.vpr_metrics import (
 
 def compute_sample_metrics(pred_mat, gt_mat):
     return {
-        "auprc": createPR(pred_mat, gt_mat)[2],
-        "r_at_1": recallAtK(pred_mat, gt_mat, K=1),
-        "r_at_5": recallAtK(pred_mat, gt_mat, K=5),
-        "r_at_10": recallAtK(pred_mat, gt_mat, K=10),
-        "r_at_100p": recallAt100precision(pred_mat, gt_mat),
-        "mrr": meanReciprocalRank(pred_mat, gt_mat),
+        "auprc": float(createPR(pred_mat, gt_mat)[2]),
+        "r_at_1": float(recallAtK(pred_mat, gt_mat, K=1)),
+        "r_at_5": float(recallAtK(pred_mat, gt_mat, K=5)),
+        "r_at_10":float(recallAtK(pred_mat, gt_mat, K=10)),
+        "r_at_100p": float(recallAt100precision(pred_mat, gt_mat)),
+        "mrr": float(meanReciprocalRank(pred_mat, gt_mat)),
     }
 
 
@@ -137,7 +138,7 @@ if __name__ == "__main__":
                     ref, query = pair_str.split("-")
                     ref_query_pairs.append((scene_id, ref, query))
         
-        # ref_query_pairs = ref_query_pairs[:10] # for testing that the whole pipeline works
+        # ref_query_pairs = [ref_query_pairs[290]] # for testing that the whole pipeline works
 
         # # val_selected_scenes = ["394a542a19", "9f79564dbf", "e8e81396b6"]
         # val_dataset = ScanNetPPResizedHardIoUDataset(cfg, val_selected_scenes, None)

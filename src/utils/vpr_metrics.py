@@ -19,7 +19,7 @@ def createPR(S_in, GThard, n_thresh=100):
     GTP = np.count_nonzero(GT.any(0))
 
     if GTP == 0:
-        return [1], [0], 0.0
+        return [1.0], [0.0], 0.0
 
     # GT-values for best match per query (i.e., per column)
     GT = GT[np.argmax(S, axis=0), np.arange(GT.shape[1])]
@@ -87,7 +87,10 @@ def recallAtK(S, GT, K=1):
 
     # ensure logical datatype in GT
     GT = GT.astype("bool")
-
+    
+    if not np.any(GT):
+        return 0.0
+    
     # discard all query images without an actually matching database image
     j = GT.sum(0) > 0  # columns with matches
     S = S[:, j]  # select columns with a match

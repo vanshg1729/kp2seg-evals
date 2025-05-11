@@ -1,8 +1,8 @@
 DATASET:
   DATA_SOURCE: 'Replica'
-  DATA_ROOT: '/scratch/rjayanti/toponav/indoor-topo-loc/datasets/replica-dataset/data'
-  SEGDATA_ROOT: '/scratch/rjayanti/toponav/indoor-topo-loc/datasets/replica-dataset/data'
-  PAIRS_PATH: '/scratch/rjayanti/toponav/indoor-topo-loc/datasets/replica-dataset/data/replica_pose_bins_subset.json'
+  DATA_ROOT: '/ssd_scratch/cvit/akshat/toponav/indoor-topo-loc/datasets/replica-dataset/data'
+  SEGDATA_ROOT: '/ssd_scratch/cvit/akshat/toponav/indoor-topo-loc/datasets/replica-dataset/data'
+  PAIRS_PATH: '/ssd_scratch/cvit/akshat/toponav/indoor-topo-loc/datasets/replica-dataset/data/replica_pose_bins_subset.json'
   # SCENES: None # Read from resources/scannetpp_176_split.json
   # SCENES_VAL: None # Read from resources/scannetpp_176_split.json
   HEIGHT: 480
